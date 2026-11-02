@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="LAN Sharks checks Wireshark captures from small office networks for ARP poisoning and SYN floods.">
+<meta name="theme-color" content="#090d16">
+<title>LAN Sharks | Network threat detection for small offices</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23131b2e'/%3E%3Cpath d='M10 21c2.2-6.4 6.3-11 13-13.2-2.6 4.4-3.6 8.6-3 13.2z' fill='%2338bdf8'/%3E%3Cpath d='M5 24c2.5-2 5-2 7.5 0s5 2 7.5 0 5-2 7.5 0' fill='none' stroke='%2334d399' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="style.css">
+<script>document.documentElement.classList.add("js");</script>
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="index.html">LAN Sharks</a>
+  <nav aria-label="Main">
+    <a href="#services">Services</a>
+    <a href="#reports">Attack Reports</a>
+    <a href="dashboard.py">Account Portal</a>
+    <a href="login.html" data-open-login data-session-link>Client Login</a>
+  </nav>
+</header>
+
+<main class="landing">
+  <section class="hero">
+    <div>
+      <h1 data-reveal>Network Threat Detection for Small Offices.</h1>
+      <p class="lead" data-reveal style="--d: 120ms">Export a capture from Wireshark and drop it in your folder. The next time you log in, LAN Sharks checks every packet and shows you any device pretending to be your router, or flooding a machine with connection requests.</p>
+      <div class="cta-row" data-reveal style="--d: 220ms">
+        <a class="button lg" href="contact.html">Create account</a>
+        <a class="button secondary lg" href="#services">How to send a capture</a>
+      </div>
+    </div>
+
+    <div class="monitor glass" data-reveal style="--d: 160ms">
+      <div class="window-bar">
+        <span>Sample capture</span>
+        <span class="mono">1_office_capture.csv</span>
+        <span class="state">
+          <span class="status ok before" aria-hidden="true"><span class="dot"></span>Monitoring</span>
+          <span class="status warn after"><span class="dot"></span>3 findings</span>
+        </span>
+      </div>
+
+      <svg class="topology" viewBox="0 0 480 300" role="img" aria-labelledby="topology-title">
+        <title id="topology-title">Sample office network. A device with MAC address 08:00:2b:ef:ab:7c is flagged for claiming the router's IP address.</title>
+        <path id="link-laptop" class="link" d="M240 150 L96 70"/>
+        <path id="link-server" class="link" d="M240 150 L384 70"/>
+        <path id="link-printer" class="link" d="M240 150 L96 230"/>
+        <path id="link-hostile" class="link hostile" d="M384 230 L240 150"/>
+
+        <circle class="packet" r="3"><animateMotion dur="3.6s" repeatCount="indefinite"><mpath href="#link-laptop"/></animateMotion></circle>
+        <circle class="packet" r="3"><animateMotion dur="3.6s" begin="-1.8s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#link-laptop"/></animateMotion></circle>
+        <circle class="packet" r="3"><animateMotion dur="4.2s" begin="-0.7s" repeatCount="indefinite"><mpath href="#link-server"/></animateMotion></circle>
+        <circle class="packet" r="3"><animateMotion dur="4.2s" begin="-2.8s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#link-server"/></animateMotion></circle>
+        <circle class="packet" r="3"><animateMotion dur="4.8s" begin="-2.3s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#link-printer"/></animateMotion></circle>
+        <circle class="packet hostile" r="3"><animateMotion dur="1.6s" repeatCount="indefinite"><mpath href="#link-hostile"/></animateMotion></circle>
+        <circle class="packet hostile" r="3"><animateMotion dur="1.6s" begin="-0.8s" repeatCount="indefinite"><mpath href="#link-hostile"/></animateMotion></circle>
+
+        <g class="node" transform="translate(96 70)">
+          <rect class="body" x="-22" y="-18" width="44" height="36" rx="10"/>
+          <rect class="glyph" x="-9" y="-8" width="18" height="12" rx="2"/>
+          <path class="glyph" d="M-12 7h24"/>
+          <text class="node-name" y="36">Laptop</text>
+          <text class="node-ip" y="50">192.168.1.20</text>
+        </g>
+        <g class="node" transform="translate(384 70)">
+          <rect class="body" x="-22" y="-18" width="44" height="36" rx="10"/>
+          <rect class="glyph" x="-8" y="-9" width="16" height="7" rx="2"/>
+          <rect class="glyph" x="-8" y="1" width="16" height="7" rx="2"/>
+          <text class="node-name" y="36">File server</text>
+          <text class="node-ip" y="50">192.168.1.35</text>
+        </g>
+        <g class="node" transform="translate(96 230)">
+          <rect class="body" x="-22" y="-18" width="44" height="36" rx="10"/>
+          <path class="glyph" d="M-6 -4v-5h12v5M-6 3v6h12v-6"/>
+          <rect class="glyph" x="-10" y="-4" width="20" height="9" rx="2"/>
+          <text class="node-name" y="36">Printer</text>
+          <text class="node-ip" y="50">192.168.1.30</text>
+        </g>
+        <g class="node router" transform="translate(240 150)">
+          <rect class="body" x="-28" y="-20" width="56" height="40" rx="11"/>
+          <path class="glyph" d="M-11 7h22M-8 -1a11 11 0 0 1 16 0M-4 3a6 6 0 0 1 8 0"/>
+          <text class="node-name" y="38">Router</text>
+          <text class="node-ip" y="52">192.168.1.1</text>
+        </g>
+        <g class="node hostile" transform="translate(384 230)">
+          <rect class="halo" x="-22" y="-18" width="44" height="36" rx="10"/>
+          <rect class="body" x="-22" y="-18" width="44" height="36" rx="10"/>
+          <path class="glyph" d="M0 -9L10 8H-10Z M0 -3v5 M0 5.5v.1"/>
+          <text class="node-name" y="36">Unknown device</text>
+          <text class="node-ip" y="50">08:00:2b:ef:ab:7c</text>
+        </g>
+      </svg>
+
+      <ol class="log" aria-label="Events from the sample capture">
+        <li><time>09:13:10</time><span class="proto">ARP</span><span class="msg"><span class="mono">08:00:2b:ef:ab:7c</span> says it is the router</span></li>
+        <li><time>09:13:14</time><span class="proto">ARP</span><span class="msg">The same device has now claimed 3 addresses</span></li>
+        <li><time>10:40:00</time><span class="proto">TCP</span><span class="msg">[SYN] flood on port 80, sent from 192.168.1.10 to itself</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="services" class="section">
+    <div class="section-head" data-reveal>
+      <h2>Send a capture in three steps</h2>
+      <p>There's nothing to install on your network. If you can save a file from Wireshark, you can send us a capture.</p>
+    </div>
+
+    <div class="workflow">
+      <div class="steps" role="tablist" aria-label="Sending a capture" aria-orientation="vertical" data-reveal>
+        <button class="step" type="button" role="tab" id="tab-export" aria-controls="pane-export" aria-selected="true">
+          <span class="step-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11"/><path d="m7.5 7.5 4.5-4.5 4.5 4.5"/><path d="M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/></svg>
+          </span>
+          <span>
+            <span class="step-title"><span class="step-num">1</span>Export the capture</span>
+            <span class="step-desc">In Wireshark, save the packets as a CSV file.</span>
+          </span>
+        </button>
+        <button class="step" type="button" role="tab" id="tab-name" aria-controls="pane-name" aria-selected="false" tabindex="-1">
+          <span class="step-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12V5a2 2 0 0 1 2-2h7l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>
+          </span>
+          <span>
+            <span class="step-title"><span class="step-num">2</span>Name the file</span>
+            <span class="step-desc">Start the name with your customer number and an underscore.</span>
+          </span>
+        </button>
+        <button class="step" type="button" role="tab" id="tab-drop" aria-controls="pane-drop" aria-selected="false" tabindex="-1">
+          <span class="step-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 10v6"/><path d="m9 13 3 3 3-3"/></svg>
+          </span>
+          <span>
+            <span class="step-title"><span class="step-num">3</span>Drop it in your folder</span>
+            <span class="step-desc">Put it in the logs folder. It's checked the next time you log in.</span>
+          </span>
+        </button>
+      </div>
+
+      <div class="preview glass" data-reveal style="--d: 120ms">
+        <div class="pane" id="pane-export" role="tabpanel" aria-labelledby="tab-export">
+          <div class="window-bar"><span>In Wireshark, choose File › Export Packet Dissections › As CSV</span></div>
+          <div class="pane-body">
+<pre class="code-block"><span class="tok-head">No.,Time,Source,Destination,Protocol,Length,Info</span>
+6,2026-03-14 09:13:10,<span class="tok-warn">08:00:2b:ef:ab:7c</span>,ff:ff:ff:ff:ff:ff,ARP,42,192.168.1.1 is at 08:00:2b:ef:ab:7c
+7,2026-03-14 09:13:11,<span class="tok-warn">08:00:2b:ef:ab:7c</span>,ff:ff:ff:ff:ff:ff,ARP,42,192.168.1.20 is at 08:00:2b:ef:ab:7c
+11,2026-03-14 10:40:00,192.168.1.10,192.168.1.10,TCP,60,80 → 80 <span class="tok-warn">[SYN]</span> Seq=0 Win=512 Len=0</pre>
+            <p class="pane-note">Keep Wireshark's default columns. LAN Sharks reads the time, source, destination, protocol and info of every packet.</p>
+          </div>
+        </div>
+
+        <div class="pane" id="pane-name" role="tabpanel" aria-labelledby="tab-name">
+          <div class="window-bar"><span>Naming the file</span></div>
+          <div class="pane-body">
+            <p class="filename"><span class="fn fn-id">1</span><span class="fn fn-sep">_</span><span class="fn fn-name">office_capture</span><span class="fn fn-ext">.csv</span></p>
+            <ul class="legend">
+              <li><span class="swatch sky"></span><span><strong>Your customer number.</strong> This is how the capture is matched to your account.</span></li>
+              <li><span class="swatch emerald"></span><span><strong>An underscore.</strong> It separates the number from the rest of the name.</span></li>
+              <li><span class="swatch white"></span><span><strong>Any name you like.</strong> Pick something that helps you recognize the capture later.</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="pane" id="pane-drop" role="tabpanel" aria-labelledby="tab-drop">
+          <div class="window-bar"><span>Your logs folder</span></div>
+          <div class="pane-body">
+            <div class="tree">
+              <div class="tree-row">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                <span>logs/</span>
+              </div>
+              <div class="tree-row file">
+                <span class="sr-only">After it is imported, 1_office_capture.csv is renamed with the date and time and a .old extension.</span>
+                <span class="swap" aria-hidden="true">
+                  <span class="before">1_office_capture.csv</span>
+                  <span class="after file-name">1_office_capture_20261102-180700.old</span>
+                </span>
+                <span class="swap" aria-hidden="true">
+                  <span class="before status warn"><span class="dot"></span>Waiting</span>
+                  <span class="after status ok">Imported</span>
+                </span>
+              </div>
+            </div>
+            <ol class="flow">
+              <li>You log in</li>
+              <li>New CSV files are imported</li>
+              <li>Each file is renamed to .old</li>
+              <li>Findings appear on your account page</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="threats" class="section">
+    <div class="section-head" data-reveal>
+      <h2>What we look for</h2>
+      <p>Every capture is checked for two attacks. Matches are grouped by day, so one noisy afternoon shows up as one finding instead of hundreds.</p>
+    </div>
+
+    <div class="threat-grid">
+      <article class="threat glass" data-reveal>
+        <div class="threat-top">
+          <span class="status ok"><span class="dot"></span>Check active</span>
+          <span class="protocol">ARP</span>
+        </div>
+        <div class="diagram-box">
+          <svg class="diagram" viewBox="0 0 400 200" role="img" aria-label="One MAC address sending ARP replies for three different IP addresses">
+            <path id="arp-a" class="claim" d="M150 100 C 205 100, 212 46, 262 46"/>
+            <path id="arp-b" class="claim" d="M150 100 L262 100"/>
+            <path id="arp-c" class="claim" d="M150 100 C 205 100, 212 154, 262 154"/>
+            <circle class="packet hostile" r="3"><animateMotion dur="2.4s" repeatCount="indefinite"><mpath href="#arp-a"/></animateMotion></circle>
+            <circle class="packet hostile" r="3"><animateMotion dur="2.4s" begin="-0.8s" repeatCount="indefinite"><mpath href="#arp-b"/></animateMotion></circle>
+            <circle class="packet hostile" r="3"><animateMotion dur="2.4s" begin="-1.6s" repeatCount="indefinite"><mpath href="#arp-c"/></animateMotion></circle>
+            <g class="device" transform="translate(88 100)">
+              <rect class="halo" x="-70" y="-28" width="140" height="56" rx="12" style="animation-delay: 0s"/>
+              <rect class="body" x="-70" y="-28" width="140" height="56" rx="12"/>
+              <text class="d-label" y="-5">One device</text>
+              <text class="d-value" y="13">08:00:2b:ef:ab:7c</text>
+            </g>
+            <text class="d-label" x="324" y="22">claims to be</text>
+            <g class="ip" transform="translate(324 46)"><rect x="-62" y="-15" width="124" height="30" rx="15"/><text class="d-value" y="4">192.168.1.1</text></g>
+            <g class="ip" transform="translate(324 100)"><rect x="-62" y="-15" width="124" height="30" rx="15"/><text class="d-value" y="4">192.168.1.20</text></g>
+            <g class="ip" transform="translate(324 154)"><rect x="-62" y="-15" width="124" height="30" rx="15"/><text class="d-value" y="4">192.168.1.35</text></g>
+          </svg>
+        </div>
+        <h3>ARP poisoning</h3>
+        <p>A device answers for IP addresses that aren't its own, usually your router's, so traffic meant for other machines passes through it first.</p>
+        <dl class="rule">
+          <dt>Flagged when</dt>
+          <dd>One MAC address claims two or more IP addresses on the same day.</dd>
+          <dt>You see</dt>
+          <dd>The MAC address, how many packets it sent and when it started.</dd>
+        </dl>
+      </article>
+
+      <article class="threat glass" data-reveal style="--d: 120ms">
+        <div class="threat-top">
+          <span class="status ok"><span class="dot"></span>Check active</span>
+          <span class="protocol">TCP</span>
+        </div>
+        <div class="diagram-box">
+          <svg class="diagram" viewBox="0 0 400 200" role="img" aria-label="A host sending SYN packets to its own port 80 again and again">
+            <defs>
+              <marker id="arrow-amber" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M1 1L8 5L1 9" fill="none" stroke="#fbbf24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </marker>
+            </defs>
+            <path id="syn-loop" class="loop" d="M180 78 C 238 14, 352 24, 352 100 C 352 176, 238 186, 180 122" marker-end="url(#arrow-amber)"/>
+            <circle class="packet hostile" r="3"><animateMotion dur="2.8s" repeatCount="indefinite"><mpath href="#syn-loop"/></animateMotion></circle>
+            <circle class="packet hostile" r="3"><animateMotion dur="2.8s" begin="-0.7s" repeatCount="indefinite"><mpath href="#syn-loop"/></animateMotion></circle>
+            <circle class="packet hostile" r="3"><animateMotion dur="2.8s" begin="-1.4s" repeatCount="indefinite"><mpath href="#syn-loop"/></animateMotion></circle>
+            <circle class="packet hostile" r="3"><animateMotion dur="2.8s" begin="-2.1s" repeatCount="indefinite"><mpath href="#syn-loop"/></animateMotion></circle>
+            <g class="device" transform="translate(104 100)">
+              <rect class="body" x="-76" y="-30" width="152" height="60" rx="12"/>
+              <text class="d-value" y="-3">192.168.1.10</text>
+              <text class="d-label" y="15">source = destination</text>
+            </g>
+            <g class="port" transform="translate(352 100)">
+              <rect class="halo" x="-26" y="-15" width="52" height="30" rx="15" style="animation-delay: 0s"/>
+              <rect class="body" x="-26" y="-15" width="52" height="30" rx="15"/>
+              <text class="d-value" y="4">:80</text>
+            </g>
+            <text class="d-flag" x="270" y="36">[SYN]</text>
+            <text class="d-flag" x="270" y="176">[SYN]</text>
+          </svg>
+        </div>
+        <h3>SYN flood</h3>
+        <p>A burst of connection requests that claim to come from the machine they're sent to, aimed at one port to tie it up.</p>
+        <dl class="rule">
+          <dt>Flagged when</dt>
+          <dd>A packet carries the [SYN] flag and its source and destination IP match.</dd>
+          <dt>You see</dt>
+          <dd>One row per port per day, with the number of packets.</dd>
+        </dl>
+      </article>
+    </div>
+  </section>
+
+  <section id="reports" class="section">
+    <div class="section-head" data-reveal>
+      <h2>Attack reports</h2>
+      <p>This is the account page for customer 1, built from the sample capture that comes with the project. Each row comes from packets stored in the database.</p>
+    </div>
+
+    <div class="window glass" data-reveal>
+      <div class="window-bar">
+        <span>Account portal</span>
+        <span class="status warn"><span class="dot"></span>Sample data</span>
+      </div>
+      <div class="window-body">
+        <div class="account-head">
+          <div>
+            <p class="account-name">Fatima Ammar</p>
+            <p class="account-company">Barakah Enterprise</p>
+          </div>
+          <div class="chips" aria-hidden="true">
+            <span class="chip">Update contact information</span>
+            <span class="chip">Change password</span>
+          </div>
+        </div>
+        <p class="summary">1 capture imported, 20 packets checked, <strong>3 findings</strong>.</p>
+
+        <div class="report-grid">
+          <div>
+            <h3>Imported captures</h3>
+            <ul class="captures">
+              <li class="capture">
+                <div class="capture-top">
+                  <span class="file-name">1_office_capture.csv</span>
+                  <span class="status ok">Imported</span>
+                </div>
+                <p class="capture-meta">20 packets, renamed to .old</p>
+              </li>
+              <li class="capture waiting">
+                <p class="capture-meta">New captures in your logs folder are imported the next time you log in.</p>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3>Detected attacks</h3>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Attack Type</th><th>Info</th><th>Attacks</th><th>Date-Time</th></tr></thead>
+                <tbody>
+                  <tr><td>ARP Poisoning Attack</td><td>08:00:2b:ef:ab:7c</td><td>5 attacks</td><td>2026-03-14 09:13:10</td></tr>
+                  <tr><td>Packet Flood</td><td>Packet Flag: [SYN]</td><td>Port: 80 Attacks: 6</td><td>2026-03-14 10:40:00</td></tr>
+                  <tr><td>Packet Flood</td><td>Packet Flag: [SYN]</td><td>Port: 80 Attacks: 3</td><td>2026-03-15 08:05:41</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <ul class="insights">
+              <li><span class="dot"></span><span><span class="mono">08:00:2b:ef:ab:7c</span> answered for 192.168.1.1, your router's address, and two other machines.</span></li>
+              <li><span class="dot"></span><span>Port 80 on 192.168.1.10 received 9 SYN packets over two days that claimed to come from itself.</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="after-window" data-reveal>
+      <a class="button" href="dashboard.py">Open your account portal</a>
+      <span>Demo login: <code>fammar</code> with password <code>P@ssw0rd</code></span>
+    </div>
+  </section>
+
+  <section id="about" class="section about">
+    <div class="about-copy" data-reveal>
+      <h2>About this project</h2>
+      <p>LAN Sharks started as the capstone for the Python Scripting Fundamentals course in the Akamai Network Engineering Professional Certificate.</p>
+      <p>The company is made up, but the detection code is real. Python scripts read each capture, store every packet in SQLite and run both checks whenever a customer logs in.</p>
+      <ul class="stack">
+        <li>Python 3</li>
+        <li>SQLite</li>
+        <li>CGI</li>
+        <li>HTML, CSS and JavaScript</li>
+        <li>No frameworks</li>
+      </ul>
+    </div>
+
+    <div class="demo glass" data-reveal style="--d: 120ms">
+      <h3>Try the demo</h3>
+      <p>Log in with one of these accounts to see both sides of the portal.</p>
+      <dl class="accounts">
+        <div><dt>Customer</dt><dd><code>fammar</code><span>Leave the employee switch off</span></dd></div>
+        <div><dt>Employee</dt><dd><code>mali</code><span>Turn the employee switch on</span></dd></div>
+        <div><dt>Password</dt><dd><code>P@ssw0rd</code><span>Same for every demo account</span></dd></div>
+      </dl>
+      <a class="button wide" href="login.html" data-open-login>Log in to the demo</a>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <p>LAN Sharks is a fictional company built for a portfolio. Every name, address and packet on this site is made up.</p>
+  <nav aria-label="Footer">
+    <a href="#services">Services</a>
+    <a href="#threats">Threats</a>
+    <a href="#reports">Attack Reports</a>
+    <a href="contact.html">Create account</a>
+  </nav>
+</footer>
+
+<dialog class="login-dialog" id="login-dialog" aria-labelledby="dialog-title">
+  <div class="auth-card glass">
+    <button class="icon-button" type="button" aria-label="Close" data-close>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+    <span class="auth-mark" aria-hidden="true"></span>
+    <h2 id="dialog-title">Log in</h2>
+    <p class="auth-intro">Customers and employees use the same form.</p>
+    <form class="auth-form" action="login.py" method="post">
+      <label>User name
+        <input type="text" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" required autofocus>
+      </label>
+      <div class="field">
+        <label for="dialog-password">Password</label>
+        <div class="pass-field">
+          <input id="dialog-password" type="password" name="password" autocomplete="current-password" required>
+          <button class="pass-toggle" type="button" data-toggle-password aria-controls="dialog-password" aria-pressed="false" aria-label="Show password">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <label class="switch-row">
+        <span>I'm a LAN Sharks employee<small>Customers leave this off.</small></span>
+        <input class="switch" type="checkbox" name="employee" value="yes" role="switch">
+      </label>
+      <button type="submit">Log in</button>
+    </form>
+    <p class="auth-foot">New customer? <a href="contact.html">Create an account</a></p>
+  </div>
+</dialog>
+
+<script>
+(() => {
+  const header = document.querySelector(".site-header");
+  const onScroll = () => header.classList.toggle("scrolled", window.scrollY > 8);
+  onScroll();
+  window.addEventListener("scroll", onScroll, { passive: true });
+
+  const revealed = document.querySelectorAll("[data-reveal]");
+  if ("IntersectionObserver" in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("is-in");
+        observer.unobserve(entry.target);
+      });
+    }, { rootMargin: "0px 0px -6% 0px", threshold: 0.08 });
+    revealed.forEach((element) => observer.observe(element));
+  } else {
+    revealed.forEach((element) => element.classList.add("is-in"));
+  }
+
+  const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
+  const selectTab = (tab, moveFocus) => {
+    tabs.forEach((item) => {
+      const active = item === tab;
+      const pane = document.getElementById(item.getAttribute("aria-controls"));
+      item.setAttribute("aria-selected", String(active));
+      item.tabIndex = active ? 0 : -1;
+      pane.hidden = !active;
+      pane.classList.toggle("is-active", active);
+    });
+    if (moveFocus) tab.focus();
+  };
+  tabs.forEach((tab, index) => {
+    tab.addEventListener("click", () => selectTab(tab, false));
+    tab.addEventListener("keydown", (event) => {
+      const keys = {
+        ArrowDown: index + 1,
+        ArrowRight: index + 1,
+        ArrowUp: index - 1,
+        ArrowLeft: index - 1,
+        Home: 0,
+        End: tabs.length - 1,
+      };
+      if (!(event.key in keys)) return;
+      event.preventDefault();
+      selectTab(tabs[(keys[event.key] + tabs.length) % tabs.length], true);
+    });
+  });
+  if (tabs.length) selectTab(tabs[0], false);
+
+  const dialog = document.getElementById("login-dialog");
+  document.addEventListener("click", (event) => {
+    const trigger = event.target.closest("[data-open-login]");
+    if (!trigger || typeof dialog.showModal !== "function") return;
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
+    event.preventDefault();
+    dialog.showModal();
+  });
+  dialog.addEventListener("click", (event) => {
+    if (event.target === dialog) dialog.close();
+  });
+  dialog.querySelector("[data-close]").addEventListener("click", () => dialog.close());
+
+  document.querySelectorAll("[data-toggle-password]").forEach((button) => {
+    const input = document.getElementById(button.getAttribute("aria-controls"));
+    button.addEventListener("click", () => {
+      const show = input.type === "password";
+      input.type = show ? "text" : "password";
+      button.setAttribute("aria-pressed", String(show));
+      button.setAttribute("aria-label", show ? "Hide password" : "Show password");
+      input.focus();
+    });
+  });
+
+  fetch("change_password.py", { redirect: "manual", credentials: "same-origin", cache: "no-store" })
+    .then((response) => {
+      if (response.type === "opaqueredirect" || !response.ok) return;
+      document.querySelectorAll("[data-session-link]").forEach((link) => {
+        link.textContent = "Log Out";
+        link.href = "logout.py";
+        link.removeAttribute("data-open-login");
+      });
+    })
+    .catch(() => {});
+})();
+</script>
+</body>
+</html>

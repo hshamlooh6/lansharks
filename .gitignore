@@ -1,0 +1,6 @@
+python.db
+python.db-journal
+logs/*.old
+__pycache__/
+*.pyc
+.DS_Store

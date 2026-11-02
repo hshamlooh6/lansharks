@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#090d16">
+<title>Log in | LAN Sharks</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23131b2e'/%3E%3Cpath d='M10 21c2.2-6.4 6.3-11 13-13.2-2.6 4.4-3.6 8.6-3 13.2z' fill='%2338bdf8'/%3E%3Cpath d='M5 24c2.5-2 5-2 7.5 0s5 2 7.5 0 5-2 7.5 0' fill='none' stroke='%2334d399' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="style.css">
+<script>document.documentElement.classList.add("js");</script>
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="index.html">LAN Sharks</a>
+  <nav aria-label="Main">
+    <a href="index.html#services">Services</a>
+    <a href="index.html#reports">Attack Reports</a>
+    <a href="dashboard.py">Account Portal</a>
+    <a href="login.html" aria-current="page">Client Login</a>
+  </nav>
+</header>
+
+<main class="auth">
+  <p class="notice ok" id="signed-in" hidden>You're already logged in. <a href="dashboard.py">Go to your account portal</a> or <a href="logout.py">log out</a>.</p>
+
+  <section class="auth-card glass" data-reveal>
+    <span class="auth-mark" aria-hidden="true"></span>
+    <h1>Log in</h1>
+    <p class="auth-intro">Customers and employees use the same form.</p>
+    <form class="auth-form" action="login.py" method="post">
+      <label>User name
+        <input type="text" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+      </label>
+      <div class="field">
+        <label for="password">Password</label>
+        <div class="pass-field">
+          <input id="password" type="password" name="password" autocomplete="current-password" required>
+          <button class="pass-toggle" type="button" data-toggle-password aria-controls="password" aria-pressed="false" aria-label="Show password">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <label class="switch-row">
+        <span>I'm a LAN Sharks employee<small>Customers leave this off.</small></span>
+        <input class="switch" type="checkbox" name="employee" value="yes" role="switch">
+      </label>
+      <button type="submit">Log in</button>
+    </form>
+    <p class="hint">Demo accounts: customer <code>fammar</code>, employee <code>mali</code>, password <code>P@ssw0rd</code></p>
+  </section>
+
+  <p class="auth-foot" data-reveal style="--d: 120ms">New customer? <a href="contact.html">Create an account</a></p>
+</main>
+
+<script>
+(() => {
+  const header = document.querySelector(".site-header");
+  const onScroll = () => header.classList.toggle("scrolled", window.scrollY > 8);
+  onScroll();
+  window.addEventListener("scroll", onScroll, { passive: true });
+
+  document.querySelectorAll("[data-reveal]").forEach((element) => element.classList.add("is-in"));
+
+  document.querySelectorAll("[data-toggle-password]").forEach((button) => {
+    const input = document.getElementById(button.getAttribute("aria-controls"));
+    button.addEventListener("click", () => {
+      const show = input.type === "password";
+      input.type = show ? "text" : "password";
+      button.setAttribute("aria-pressed", String(show));
+      button.setAttribute("aria-label", show ? "Hide password" : "Show password");
+      input.focus();
+    });
+  });
+
+  fetch("change_password.py", { redirect: "manual", credentials: "same-origin", cache: "no-store" })
+    .then((response) => {
+      if (response.type === "opaqueredirect" || !response.ok) return;
+      document.getElementById("signed-in").hidden = false;
+      const link = document.querySelector('nav a[aria-current="page"]');
+      link.textContent = "Log Out";
+      link.href = "logout.py";
+      link.removeAttribute("aria-current");
+    })
+    .catch(() => {});
+})();
+</script>
+</body>
+</html>
