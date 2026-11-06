@@ -26,7 +26,7 @@ I built the first version as the capstone for the Python Scripting Fundamentals 
 You only need Python 3.8 or newer. There is nothing to install with pip.
 
 ```bash
-git clone https://github.com/<your-username>/lansharks.git
+git clone https://github.com/hshamlooh6/lansharks.git
 cd lansharks
 python3 server.py
 ```
